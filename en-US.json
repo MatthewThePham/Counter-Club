@@ -1,0 +1,38 @@
+{
+    "interactionModel": {
+        "languageModel": {
+            "invocationName": "counter",
+            "intents": [
+                {
+                    "name": "AMAZON.CancelIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.HelpIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.StopIntent",
+                    "samples": []
+                },
+                {
+                    "name": "userinputintent",
+                    "slots": [
+                        {
+                            "name": "numberin",
+                            "type": "AMAZON.NUMBER"
+                        }
+                    ],
+                    "samples": [
+                        "{numberin}",
+                        "is it {numberin}",
+                        "it is {numberin}",
+                        "is the position {numberin}",
+                        "how about {numberin}"
+                    ]
+                }
+            ],
+            "types": []
+        }
+    }
+}
