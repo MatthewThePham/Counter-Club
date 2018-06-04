@@ -8,18 +8,25 @@ const LaunchRequestHandler = {
         return requestEnvelope.session.new || requestEnvelope.request.type == 'LaunchRequestHandler';
     },
     handle(handlerInput){
-        const sessionAttributes = handlerInput.attributesManager.getSessionAttributes();
+       // const sessionAttributes = handlerInput.attributesManager.getSessionAttributes();
+    const sessionAttributes = {};
 
         //sets the default number of list to 5 and score to 0
-        var sessionAttributes.score = 0;
-        var sessionAttributes.arrayAmount =5;
-        var sessionAttributes.gameState = 'ongoing'; 
+        Object.assign(sessionAttributes, {
+            score: 1,
+            arrayAmount : 5,
+            gameState :'ongoing',
+            correctRandomNum : 0,
+            stateDetermine : false
+        });
+        
+        handlerInput.attributesManager.setSessionAttributes(sessionAttributes);
 
         const startPrompt= 'Hello fellow human and welcome to Counter! A list complex integer numbers will be given to you.'
-        + ' Your job is to say yes or no depending if the number was in that list. Begin!';
-
-        return handlerInput.responseBuilder;
-            .speak(startPrompt + stringArray());
+        + ' Your job is to say yes or no depending if the number was in that list. Begin! ' + stringArray();
+        
+        return handlerInput.responseBuilder
+            .speak(startPrompt + stringArray())
             .getResponse();
     },
 };
@@ -31,9 +38,10 @@ const YesIntentHandler = {
     },
     handle(handlerInput){
         var answer = true;
-        checkAnswer(answer);
+        var input = handlerInput;
+        checkAnswer(answer,input);
     },
-}
+};
 
 const NoIntentHandler = {
     canHandle(handlerInput){
@@ -42,13 +50,14 @@ const NoIntentHandler = {
     },
     handle(handlerInput){
         var answer = false;
-        checkAnswer(answer);
+        var input = handlerInput;
+        checkAnswer(answer,input);
     },
-}
+};
 
 
 const HelpIntentHandler = {
-    canHandle(handerInput){
+    canHandle(handlerInput){
         const request = handlerInput.requestEnvelope.request;
         return request.type === 'IntentRequest' && request.intent.name === 'AMAZON.HelpIntent';
     },
@@ -71,7 +80,7 @@ const SessionEndedRequestHandler = {
   handle(handlerInput) {
     return handlerInput.responseBuilder.getResponse();
   },
-}
+};
 
 const UnhandledIntentHandler = {
   canHandle() {
@@ -102,14 +111,12 @@ const ErrorHandler = {
 
 
 //makes a string output and creates a correct number value
-function stringArray (){
-    const sessionAttributes=handlerInput.attributesManager.getSessionAttributes();
+function stringArray (handlerInput){
+    const sessionAttributes = handlerInput.attributesManager.getSessionAttributes();
 
     var questions = []; 
     var outputString= '';
     var NUMS_GIVEN =sessionAttributes.arrayAmount;
-    var sessionAttributes.correctRandomNum= 0;
-    var sessionAttributes.stateDetermine = false;
 
     //this is randomizer and target value between 0 and max number * 2 
     var random = Math.floor(Math.random() * (NUMS_GIVEN * 2)-1) + 0;
@@ -136,7 +143,7 @@ function stringArray (){
 }
 
  //sees if user answer is correct or not
-function checkAnswer(answer) {
+function checkAnswer(answer, handlerInput) {
     const sessionAttributes = handlerInput.attributesManager.getSessionAttributes();
 
     //sessionAttributes.gameState = 'ongoing'; 
@@ -145,26 +152,26 @@ function checkAnswer(answer) {
     var amount = sessionAttributes.arrayAmount;
     var state = sessionAttributes.gameState;
 
-    else if(answer= true && state != 'ongoing'){
+    if(answer === true && state !== 'ongoing'){
         //means the user said yes and the game is over aka they want to restart the game
         let restartPrompt = 'New round new me. Begin! ';
 
-        score= 0;
-        amount= 5;
+        score = 0;
+        amount = 5;
 
         return handlerInput.responseBuilder
-            .speak(restartPrompt+ stringArray());
+            .speak(restartPrompt+ stringArray())
             .getResponse();
     }
-      else if(answer= false && state != 'ongoing'){
+      else if(answer === false && state !== 'ongoing'){
         //means the user said no and the game is over aka they want to restart the game
         const exitPrompt = 'Hey. See you next time!';
 
          return handlerInput.responseBuilder
-            .speak(exitPrompt);
+            .speak(exitPrompt)
             .getResponse();
     }
-    else if(answer == isCorrect && state = 'ongoing'){
+    else if(answer == isCorrect && state == 'ongoing'){
         //means the user said yes and the game is not over aka they will continue to the next round
         const congratzPrompt = '<say-as interpret-as="interjection">booya! Nice one. </say-as>' + 'Next round.';
 
@@ -172,7 +179,7 @@ function checkAnswer(answer) {
         amount = amount +1 ;
 
         return handlerInput.responseBuilder
-            .speak(congratzPrompt + stringArray());
+            .speak(congratzPrompt + stringArray())
             .getResponse();
     }
     else{
@@ -203,7 +210,7 @@ exports.handler = skillBuilder
     HelpIntentHandler,
     SessionEndedRequestHandler,
     UnhandledIntentHandler,
-    ErrorHandler,
+    ErrorHandler
   )
   .addErrorHandlers(ErrorHandler)
 //.withTableName('')
