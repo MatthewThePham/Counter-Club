@@ -1,134 +1,211 @@
-//goal: Get alexa to say 3 random words from an array
+//counter alexa application
+const Alexa = require('ask-sdk');
 
-const APP_ID = undefined;
+//starts the app from this handler
+const LaunchRequestHandler = {
+    canHandle(handlerInput){
+        const requestEnvelope =handlerInput.requestEnvelope;
+        return requestEnvelope.session.new || requestEnvelope.request.type == 'LaunchRequestHandler';
+    },
+    handle(handlerInput){
+        const sessionAttributes = handlerInput.attributesManager.getSessionAttributes();
 
-const SKILL_NAME = 'Counter';
+        //sets the default number of list to 5 and score to 0
+        var sessionAttributes.score = 0;
+        var sessionAttributes.arrayAmount =5;
+        var sessionAttributes.gameState = 'ongoing'; 
 
-// here to
-const Alexa = require('alexa-sdk');
+        const startPrompt= 'Hello fellow human and welcome to Counter! A list complex integer numbers will be given to you.'
+        + ' Your job is to say yes or no depending if the number was in that list. Begin!';
 
-exports.handler = function(event, context, callback) {
-    const alexa = Alexa.handler(event, context);
-    alexa.appId = APP_ID // APP_ID is your skill id which can be found in the Amazon developer console where you create the skill.
-    alexa.registerHandlers(newSessionHandlers, gameHandlers);
-    alexa.execute();
+        return handlerInput.responseBuilder;
+            .speak(startPrompt + stringArray());
+            .getResponse();
+    },
 };
-//here is required by alexa sdk to import and export
+
+const YesIntentHandler = {
+    canHandle(handlerInput){
+        const request =handlerInput.requestEnvelope.request;
+        return request.type == 'IntentRequest' && request.intent.name == 'AMAZON.YesIntent';
+    },
+    handle(handlerInput){
+        var answer = true;
+        checkAnswer(answer);
+    },
+}
+
+const NoIntentHandler = {
+    canHandle(handlerInput){
+        const request = handlerInput.requestEnvelope.request;
+        return request.type == 'IntentRequest' && request.intent.name == 'AMAZON.YesIntent';
+    },
+    handle(handlerInput){
+        var answer = false;
+        checkAnswer(answer);
+    },
+}
 
 
-const states = {
-    GAMEMODE: '_GAMEMODE'  // Prompt the user to start or restart the game.
+const HelpIntentHandler = {
+    canHandle(handerInput){
+        const request = handlerInput.requestEnvelope.request;
+        return request.type === 'IntentRequest' && request.intent.name === 'AMAZON.HelpIntent';
+    },
+    handle(handlerInput) {
+    const speechOutput = 'Say yes or no depending if the given number was in that list. No repeats.'
+        +'If you need help, try flipping a coin?';
+    const reprompt = 'I would recommend the coinflip.';
+
+    return handlerInput.responseBuilder
+      .speak(speechOutput)
+      .reprompt(reprompt)
+      .getResponse();
+  },
 };
 
-const GAME_LENGTH= 3;
-const NUMS_GIVEN = 3;
+const SessionEndedRequestHandler = {
+  canHandle(handlerInput) {
+    return handlerInput.requestEnvelope.request.type === 'SessionEndedRequest';
+  },
+  handle(handlerInput) {
+    return handlerInput.responseBuilder.getResponse();
+  },
+}
+
+const UnhandledIntentHandler = {
+  canHandle() {
+    return true;
+  },
+  handle(handlerInput) {
+    const respondSpeech = 'Sorry but all I can understand is yes and no. Please say yes or no if the number was on the list';
+    return handlerInput.responseBuilder
+      .speak(respondSpeech)
+      .reprompt(respondSpeech)
+      .getResponse();
+  },
+};
+
+const ErrorHandler = {
+  canHandle() {
+    return true;
+  },
+  handle(handlerInput, error) {
+    console.log(`Error handled: ${error.message}`);
+
+    return handlerInput.responseBuilder
+      .speak('Sorry, I can\'t understand the command. Speak loud and clear.')
+      .reprompt('Sorry, I can\'t understand the command. Speak a bit louder and clearer.')
+      .getResponse();
+  },
+};
 
 
-const newSessionHandlers = {
+//makes a string output and creates a correct number value
+function stringArray (){
+    const sessionAttributes=handlerInput.attributesManager.getSessionAttributes();
 
-    'NewSession': function () {
+    var questions = []; 
+    var outputString= '';
+    var NUMS_GIVEN =sessionAttributes.arrayAmount;
+    var sessionAttributes.correctRandomNum= 0;
+    var sessionAttributes.stateDetermine = false;
 
-        //array for the 3 selected numbers
-        var questions = []; 
+    //this is randomizer and target value between 0 and max number * 2 
+    var random = Math.floor(Math.random() * (NUMS_GIVEN * 2)-1) + 0;
+    sessionAttributes.correctRandomNum = random;
 
-        //this.attributes["guess"] will be a session attribute, which will have persisting game data until the user exits the app
-        //randomizer and target value between 0 and 2 (for index values)
-        this.attributes["guess"] = Math.floor(Math.random() * 2) + 0;
-        var correct = this.attributes.guess;
-
-        for (let i = 0; i < NUMS_GIVEN; i++) {
+    for (let i = 0; i < NUMS_GIVEN; i++) {
         //x and y is the range
-        const x=0;
-        const y=100;
-        //puts random values into question
+        const x=0; const y=100;
+
+        //puts random values into a question String
         questions[i]= Math.floor(Math.random() * ((y-x)+1) + x);
+        outputString= outputString + '<break time=".7s"/>' +  '<emphasis level="reduced"> '+ questions[i] +'</emphasis>';
+
+        //checks if random was in the list or not and sets stateDetermine
+        if(random == questions[i]){
+            sessionAttributes.stateDetermine = true;
+        }else{
+            sessionAttributes.stateDetermine = false;
         }
 
+    } 
+    outputString = outputString +'Was the number ' + random + ' in the list?';
+    return outputString;
+}
 
-        this.handler.state = states.GAMEMODE;  //goes to the next state
-        
-        this.response.speak(
-        'Welcome to Counter! The rules are say the position of each given number, Ready? GO!'
-        + '<break time=".7s"/>' +  '<emphasis level="reduced"> '+ questions[0]+'</emphasis>'
-        +',<break time=".7s"/>' + '<emphasis level="reduced"> ' + questions[1]+'</emphasis>'
-        + ',<break time=".7s"/>' +'<emphasis level="reduced"> '+ questions[2]+'</emphasis>'
-        + ',<break time="1s"/>'+ ' What was the position at ' + questions[correct] + '?')
-        .listen('What was the number at ' + questions[correct] + '?');
-        this.emit(':responseReady');
-      
-    },
+ //sees if user answer is correct or not
+function checkAnswer(answer) {
+    const sessionAttributes = handlerInput.attributesManager.getSessionAttributes();
 
-    'AMAZON.HelpIntent': function () {    
-        this.emit(':tell',
-         'Just say the position of each given number. Example '+ 
-         '...23...43...9...'+
-         'What was the position of 23?'+
-         '...1'+
-         '...Correct!');
-    },
-    'AMAZON.CancelIntent': function () {
-        this.response.speak( 'Catch ya later!');
-        this.emit(':responseReady');
-    },
-    'AMAZON.StopIntent': function () {
-       this.response.speak('Bye!');
-        this.emit(':responseReady');
-    },
-    'SessionEndedRequest': function () {
-        console.log("SESSIONENDEDREQUEST");
-        this.response.speak( 'Bye!');
-         this.emit(':responseReady');
-    },
-};
+    //sessionAttributes.gameState = 'ongoing'; 
+    var isCorrect = sessionAttributes.stateDetermine;
+    var score= sessionAttributes.score;
+    var amount = sessionAttributes.arrayAmount;
+    var state = sessionAttributes.gameState;
 
+    else if(answer= true && state != 'ongoing'){
+        //means the user said yes and the game is over aka they want to restart the game
+        let restartPrompt = 'New round new me. Begin! ';
 
-const gameHandlers = Alexa.CreateStateHandler(states.GAMEMODE, {
- /*    'NewSession': function () {
-        this.handler.state = '';
-        this.emitWithState('NewSession'); // Uses the handler in newSessionHandlers
-    },
-*/
-   'userinputintent': function() {
+        score= 0;
+        amount= 5;
 
-    //parse the number from the intent slots using base 10
-    var guessPosition = parseInt(this.event.request.intent.slots.numberin.value, 10);
-   // var guessPosition = this.event.request.intent.slots.numberin.value;
-    var correct = this.attributes["guess"];
+        return handlerInput.responseBuilder
+            .speak(restartPrompt+ stringArray());
+            .getResponse();
+    }
+      else if(answer= false && state != 'ongoing'){
+        //means the user said no and the game is over aka they want to restart the game
+        const exitPrompt = 'Hey. See you next time!';
 
-    
-    if (guessPosition == correct){
+         return handlerInput.responseBuilder
+            .speak(exitPrompt);
+            .getResponse();
+    }
+    else if(answer == isCorrect && state = 'ongoing'){
+        //means the user said yes and the game is not over aka they will continue to the next round
+        const congratzPrompt = '<say-as interpret-as="interjection">booya! Nice one. </say-as>' + 'Next round.';
 
-        this.response.speak('<say-as interpret-as="interjection">booya</say-as>' + correct);
-        this.emit(':responseReady');
+        score = score+1;
+        amount = amount +1 ;
+
+        return handlerInput.responseBuilder
+            .speak(congratzPrompt + stringArray());
+            .getResponse();
     }
     else{
-        this.response.speak('<say-as interpret-as="interjection">le sigh</say-as> sorry the answer was ' + correct+ ' and you guessed ' +guessPosition);
-        this.emit(':responseReady');
+        //means the user said no and the game is ongoing
+        let correctNum= sessionAttributes.correctRandomNum;
+
+        let sadPrompt = 'Oh Shucks. The correct number was actually' + correctNum + '. Your total score is ' 
+        + score +'. Would you like to regain your honor?';
+        const reprompt = 'A simple yes or no if you want to play again.';
+
+        state = 'ended';
+
+          return handlerInput.responseBuilder
+            .speak(sadPrompt)
+            .reprompt(reprompt)
+            .getResponse();
     }
+}
 
+//need to edit this
+const skillBuilder = Alexa.SkillBuilders.standard();
 
-    },
-    'AMAZON.CancelIntent': function () {
-        this.response.speak('Rate this app in the Alexa skills store, and catch ya later!');
-        this.emit(':responseReady');
-
-    },
-    'AMAZON.StopIntent': function () {
-       this.response.speak('Rate this app in the Alexa skills store, and catch ya later!');
-        this.emit(':responseReady');
-
-    },
-     'SessionEndedRequest': function () {
-        console.log("SESSIONENDEDREQUEST");
-        this.response.speak( 'Bye!');
-        this.emit(':responseReady');
-
-    },
-
- 'Unhandled': function() {
-        console.log("UNHANDLED");
-        this.response.speak('Sorry, I didn\'t get that. Try saying a number.')
-        .listen('Try saying a number.');
-        this.emit(':responseReady');
-    }
-});
+exports.handler = skillBuilder
+  .addRequestHandlers(
+    LaunchRequestHandler,
+    YesIntentHandler,
+    NoIntentHandler,
+    HelpIntentHandler,
+    SessionEndedRequestHandler,
+    UnhandledIntentHandler,
+    ErrorHandler,
+  )
+  .addErrorHandlers(ErrorHandler)
+//.withTableName('')
+//.withAutoCreateTable(true)
+  .lambda();
