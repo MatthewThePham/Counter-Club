@@ -5,7 +5,9 @@
             "intents": [
                 {
                     "name": "AMAZON.CancelIntent",
-                    "samples": []
+                    "samples": [
+                        "cancel"
+                    ]
                 },
                 {
                     "name": "AMAZON.HelpIntent",
@@ -13,23 +15,17 @@
                 },
                 {
                     "name": "AMAZON.StopIntent",
+                    "samples": [
+                        "stop"
+                    ]
+                },
+                {
+                    "name": "AMAZON.YesIntent",
                     "samples": []
                 },
                 {
-                    "name": "userinputintent",
-                    "slots": [
-                        {
-                            "name": "numberin",
-                            "type": "AMAZON.NUMBER"
-                        }
-                    ],
-                    "samples": [
-                        "{numberin}",
-                        "is it {numberin}",
-                        "it is {numberin}",
-                        "is the position {numberin}",
-                        "how about {numberin}"
-                    ]
+                    "name": "AMAZON.NoIntent",
+                    "samples": []
                 }
             ],
             "types": []
