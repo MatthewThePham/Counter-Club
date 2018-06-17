@@ -1,40 +1,40 @@
+//TODO not moving to next state
 //counter alexa application
 const Alexa = require('ask-sdk');
 
 //starts the app from this handler
 const LaunchRequestHandler = {
     canHandle(handlerInput){
-        const requestEnvelope =handlerInput.requestEnvelope;
-        return requestEnvelope.session.new || requestEnvelope.request.type == 'LaunchRequestHandler';
+        const requestEnvelope = handlerInput.requestEnvelope;
+        return requestEnvelope.request.type === 'LaunchRequest';
     },
     handle(handlerInput){
-       // const sessionAttributes = handlerInput.attributesManager.getSessionAttributes();
+    const attributesManager  = handlerInput.attributesManager;
+
     const sessionAttributes = {};
 
-        //sets the default number of list to 5 and score to 0
-        Object.assign(sessionAttributes, {
-            score: 1,
-            arrayAmount : 5,
-            gameState :'ongoing',
-            correctRandomNum : 0,
-            stateDetermine : false
-        });
-        
-        handlerInput.attributesManager.setSessionAttributes(sessionAttributes);
+        sessionAttributes.score= 0;
+        sessionAttributes.arrayAmount= 5;
+        sessionAttributes.gameState= 'ongoing';
+        sessionAttributes.correctRandomNum= 0;
+        sessionAttributes.stateDetermine= false;
 
-        const startPrompt= 'Hello fellow human and welcome to Counter! A list complex integer numbers will be given to you.'
-        + ' Your job is to say yes or no depending if the number was in that list. Begin! ' + stringArray();
+     //sets the default number of list to 5 and score to 0
+    attributesManager.setSessionAttributes(sessionAttributes);
+
+    const startPrompt= 'Hello fellow human, and welcome to Counter! A list of integer numbers will be given to you.'
+    + ' Your job is to say yes or no, depending if the number was in that list. Ready? Begin! ' + stringArray(handlerInput);
         
-        return handlerInput.responseBuilder
-            .speak(startPrompt + stringArray())
-            .getResponse();
+     return handlerInput.responseBuilder
+        .speak(startPrompt)
+        .getResponse();
     },
 };
 
 const YesIntentHandler = {
     canHandle(handlerInput){
-        const request =handlerInput.requestEnvelope.request;
-        return request.type == 'IntentRequest' && request.intent.name == 'AMAZON.YesIntent';
+        const request = handlerInput.requestEnvelope.request;
+        return request.type === 'IntentRequest' && request.intent.name === 'AMAZON.YesIntent';
     },
     handle(handlerInput){
         var answer = true;
@@ -46,7 +46,7 @@ const YesIntentHandler = {
 const NoIntentHandler = {
     canHandle(handlerInput){
         const request = handlerInput.requestEnvelope.request;
-        return request.type == 'IntentRequest' && request.intent.name == 'AMAZON.YesIntent';
+        return request.type === 'IntentRequest' && request.intent.name === 'AMAZON.YesIntent';
     },
     handle(handlerInput){
         var answer = false;
@@ -55,6 +55,19 @@ const NoIntentHandler = {
     },
 };
 
+const ExitHandler = {
+  canHandle(handlerInput) {
+    const request = handlerInput.requestEnvelope.request;
+
+    return request.type === 'IntentRequest'
+    && (request.intent.name === 'AMAZON.CancelIntent' || request.intent.name === 'AMAZON.StopIntent');
+  },
+  handle(handlerInput) {
+    return handlerInput.responseBuilder
+      .speak('Leaving so soon? See you next time.')
+      .getResponse();
+  },
+};
 
 const HelpIntentHandler = {
     canHandle(handlerInput){
@@ -78,6 +91,7 @@ const SessionEndedRequestHandler = {
     return handlerInput.requestEnvelope.request.type === 'SessionEndedRequest';
   },
   handle(handlerInput) {
+    console.log('Session ended with ${handlerInput.requestEnvelope.request.reason}');
     return handlerInput.responseBuilder.getResponse();
   },
 };
@@ -100,7 +114,7 @@ const ErrorHandler = {
     return true;
   },
   handle(handlerInput, error) {
-    console.log(`Error handled: ${error.message}`);
+    console.log('Error handled: ${error.message}');
 
     return handlerInput.responseBuilder
       .speak('Sorry, I can\'t understand the command. Speak loud and clear.')
@@ -116,15 +130,15 @@ function stringArray (handlerInput){
 
     var questions = []; 
     var outputString= '';
-    var NUMS_GIVEN =sessionAttributes.arrayAmount;
+    var NUMS_GIVEN = 50;
 
     //this is randomizer and target value between 0 and max number * 2 
-    var random = Math.floor(Math.random() * (NUMS_GIVEN * 2)-1) + 0;
+    var random = Math.floor(Math.random() * (NUMS_GIVEN-1) + 1);
     sessionAttributes.correctRandomNum = random;
 
-    for (let i = 0; i < NUMS_GIVEN; i++) {
+    for (let i = 0; i < sessionAttributes.arrayAmount; i++) {
         //x and y is the range
-        const x=0; const y=100;
+        const x=0; const y=50;
 
         //puts random values into a question String
         questions[i]= Math.floor(Math.random() * ((y-x)+1) + x);
@@ -138,7 +152,7 @@ function stringArray (handlerInput){
         }
 
     } 
-    outputString = outputString +'Was the number ' + random + ' in the list?';
+    outputString = outputString + '<break time=".7s"/>' + ' Was the number ' + random + ' in the list?';
     return outputString;
 }
 
@@ -148,7 +162,7 @@ function checkAnswer(answer, handlerInput) {
 
     //sessionAttributes.gameState = 'ongoing'; 
     var isCorrect = sessionAttributes.stateDetermine;
-    var score= sessionAttributes.score;
+    var score = sessionAttributes.score;
     var amount = sessionAttributes.arrayAmount;
     var state = sessionAttributes.gameState;
 
@@ -160,7 +174,7 @@ function checkAnswer(answer, handlerInput) {
         amount = 5;
 
         return handlerInput.responseBuilder
-            .speak(restartPrompt+ stringArray())
+            .speak(restartPrompt+ stringArray(handlerInput))
             .getResponse();
     }
       else if(answer === false && state !== 'ongoing'){
@@ -171,7 +185,7 @@ function checkAnswer(answer, handlerInput) {
             .speak(exitPrompt)
             .getResponse();
     }
-    else if(answer == isCorrect && state == 'ongoing'){
+    else if(answer == isCorrect && state === 'ongoing'){
         //means the user said yes and the game is not over aka they will continue to the next round
         const congratzPrompt = '<say-as interpret-as="interjection">booya! Nice one. </say-as>' + 'Next round.';
 
@@ -179,7 +193,7 @@ function checkAnswer(answer, handlerInput) {
         amount = amount +1 ;
 
         return handlerInput.responseBuilder
-            .speak(congratzPrompt + stringArray())
+            .speak(congratzPrompt + stringArray(handlerInput))
             .getResponse();
     }
     else{
@@ -207,6 +221,7 @@ exports.handler = skillBuilder
     LaunchRequestHandler,
     YesIntentHandler,
     NoIntentHandler,
+    ExitHandler,
     HelpIntentHandler,
     SessionEndedRequestHandler,
     UnhandledIntentHandler,
