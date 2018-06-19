@@ -1,72 +1,36 @@
-//TODO not moving to next state
+//TODO yes and no intents not working
 //counter alexa application
-const Alexa = require('ask-sdk');
+'use strict';
+const Alexa = require('ask-sdk-core');
 
 //starts the app from this handler
 const LaunchRequestHandler = {
     canHandle(handlerInput){
-        const requestEnvelope = handlerInput.requestEnvelope;
-        return requestEnvelope.request.type === 'LaunchRequest';
+        const request = handlerInput.requestEnvelope.request;
+        return request.type === 'LaunchRequest';
     },
     handle(handlerInput){
     const attributesManager  = handlerInput.attributesManager;
 
     const sessionAttributes = {};
 
-        sessionAttributes.score= 0;
-        sessionAttributes.arrayAmount= 5;
-        sessionAttributes.gameState= 'ongoing';
-        sessionAttributes.correctRandomNum= 0;
-        sessionAttributes.stateDetermine= false;
+      sessionAttributes.score= 0;
+      sessionAttributes.arrayAmount= 5;
+      sessionAttributes.gameState= 'ongoing';
+      sessionAttributes.correctRandomNum= 0;
+      sessionAttributes.stateDetermine= false;
 
      //sets the default number of list to 5 and score to 0
     attributesManager.setSessionAttributes(sessionAttributes);
 
     const startPrompt= 'Hello fellow human, and welcome to Counter! A list of integer numbers will be given to you.'
     + ' Your job is to say yes or no, depending if the number was in that list. Ready? Begin! ' + stringArray(handlerInput);
-        
+    
      return handlerInput.responseBuilder
         .speak(startPrompt)
+        .withShouldEndSession(false)
         .getResponse();
     },
-};
-
-const YesIntentHandler = {
-    canHandle(handlerInput){
-        const request = handlerInput.requestEnvelope.request;
-        return request.type === 'IntentRequest' && request.intent.name === 'AMAZON.YesIntent';
-    },
-    handle(handlerInput){
-        var answer = true;
-        var input = handlerInput;
-        checkAnswer(answer,input);
-    },
-};
-
-const NoIntentHandler = {
-    canHandle(handlerInput){
-        const request = handlerInput.requestEnvelope.request;
-        return request.type === 'IntentRequest' && request.intent.name === 'AMAZON.YesIntent';
-    },
-    handle(handlerInput){
-        var answer = false;
-        var input = handlerInput;
-        checkAnswer(answer,input);
-    },
-};
-
-const ExitHandler = {
-  canHandle(handlerInput) {
-    const request = handlerInput.requestEnvelope.request;
-
-    return request.type === 'IntentRequest'
-    && (request.intent.name === 'AMAZON.CancelIntent' || request.intent.name === 'AMAZON.StopIntent');
-  },
-  handle(handlerInput) {
-    return handlerInput.responseBuilder
-      .speak('Leaving so soon? See you next time.')
-      .getResponse();
-  },
 };
 
 const HelpIntentHandler = {
@@ -84,6 +48,43 @@ const HelpIntentHandler = {
       .reprompt(reprompt)
       .getResponse();
   },
+};
+
+const ExitHandler = {
+  canHandle(handlerInput) {
+   const request = handlerInput.requestEnvelope.request;
+   return request.type === 'IntentRequest'
+    && (request.intent.name === 'AMAZON.CancelIntent' || request.intent.name === 'AMAZON.StopIntent');
+  },
+  handle(handlerInput) {
+    return handlerInput.responseBuilder
+      .speak('Leaving so soon? See you next time.')
+      .getResponse();
+  },
+};
+
+const YesIntentHandler = {
+    canHandle(handlerInput){
+        const request = handlerInput.requestEnvelope.request;
+        return request.type === 'IntentRequest' && request.intent.name === 'AMAZON.YesIntent';
+    },
+    handle(handlerInput){
+        var answer = true;
+        var input = handlerInput;
+        checkAnswer(answer,input);
+    },
+};
+
+const NoIntentHandler = {
+    canHandle(handlerInput){
+        const request = handlerInput.requestEnvelope.request;
+        return request.type === 'IntentRequest' && request.intent.name === 'AMAZON.NoIntent';
+    },
+    handle(handlerInput){
+        var answer = false;
+        var input = handlerInput;
+        checkAnswer(answer,input);
+    },
 };
 
 const SessionEndedRequestHandler = {
@@ -130,7 +131,7 @@ function stringArray (handlerInput){
 
     var questions = []; 
     var outputString= '';
-    var NUMS_GIVEN = 50;
+    var NUMS_GIVEN = 20;
 
     //this is randomizer and target value between 0 and max number * 2 
     var random = Math.floor(Math.random() * (NUMS_GIVEN-1) + 1);
@@ -138,11 +139,11 @@ function stringArray (handlerInput){
 
     for (let i = 0; i < sessionAttributes.arrayAmount; i++) {
         //x and y is the range
-        const x=0; const y=50;
+        const x=0; const y=20;
 
         //puts random values into a question String
         questions[i]= Math.floor(Math.random() * ((y-x)+1) + x);
-        outputString= outputString + '<break time=".7s"/>' +  '<emphasis level="reduced"> '+ questions[i] +'</emphasis>';
+        outputString= outputString + '<break time=".4s"/>' +  '<emphasis level="reduced"> '+ questions[i] +'</emphasis>';
 
         //checks if random was in the list or not and sets stateDetermine
         if(random == questions[i]){
@@ -155,6 +156,8 @@ function stringArray (handlerInput){
     outputString = outputString + '<break time=".7s"/>' + ' Was the number ' + random + ' in the list?';
     return outputString;
 }
+
+
 
  //sees if user answer is correct or not
 function checkAnswer(answer, handlerInput) {
@@ -169,17 +172,20 @@ function checkAnswer(answer, handlerInput) {
     if(answer === true && state !== 'ongoing'){
         //means the user said yes and the game is over aka they want to restart the game
         let restartPrompt = 'New round new me. Begin! ';
+        let reprompt = 'Say yes or no depending if the given number was in that list.'
+        +'If you need help, try flipping a coin?';
 
         score = 0;
         amount = 5;
 
         return handlerInput.responseBuilder
             .speak(restartPrompt+ stringArray(handlerInput))
+            .reprompt(reprompt)
             .getResponse();
     }
       else if(answer === false && state !== 'ongoing'){
         //means the user said no and the game is over aka they want to restart the game
-        const exitPrompt = 'Hey. See you next time!';
+        let exitPrompt = 'Hey. See you next time!';
 
          return handlerInput.responseBuilder
             .speak(exitPrompt)
@@ -187,13 +193,16 @@ function checkAnswer(answer, handlerInput) {
     }
     else if(answer == isCorrect && state === 'ongoing'){
         //means the user said yes and the game is not over aka they will continue to the next round
-        const congratzPrompt = '<say-as interpret-as="interjection">booya! Nice one. </say-as>' + 'Next round.';
+        let congratzPrompt = '<say-as interpret-as="interjection">booya! Nice one. </say-as>' + 'Next round.';
+        let reprompt = 'Say yes or no depending if the given number was in that list.'
+        +'If you need help, try flipping a coin?';
 
         score = score+1;
         amount = amount +1 ;
 
         return handlerInput.responseBuilder
             .speak(congratzPrompt + stringArray(handlerInput))
+            .reprompt(reprompt)
             .getResponse();
     }
     else{
@@ -202,7 +211,7 @@ function checkAnswer(answer, handlerInput) {
 
         let sadPrompt = 'Oh Shucks. The correct number was actually' + correctNum + '. Your total score is ' 
         + score +'. Would you like to regain your honor?';
-        const reprompt = 'A simple yes or no if you want to play again.';
+        let reprompt = 'A simple yes or no if you want to play again.';
 
         state = 'ended';
 
@@ -213,19 +222,18 @@ function checkAnswer(answer, handlerInput) {
     }
 }
 
-//need to edit this
-const skillBuilder = Alexa.SkillBuilders.standard();
+
+const skillBuilder = Alexa.SkillBuilders.custom();
 
 exports.handler = skillBuilder
   .addRequestHandlers(
     LaunchRequestHandler,
+    HelpIntentHandler,
+    ExitHandler,
     YesIntentHandler,
     NoIntentHandler,
-    ExitHandler,
-    HelpIntentHandler,
     SessionEndedRequestHandler,
-    UnhandledIntentHandler,
-    ErrorHandler
+    UnhandledIntentHandler
   )
   .addErrorHandlers(ErrorHandler)
 //.withTableName('')
