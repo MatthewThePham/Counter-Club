@@ -5,18 +5,20 @@
             "intents": [
                 {
                     "name": "AMAZON.CancelIntent",
-                    "samples": [
-                        "cancel"
-                    ]
+                    "samples": []
                 },
                 {
                     "name": "AMAZON.HelpIntent",
-                    "samples": []
+                    "samples": [
+                        "say it again",
+                        "repeat"
+                    ]
                 },
                 {
                     "name": "AMAZON.StopIntent",
                     "samples": [
-                        "stop"
+                        "exit game",
+                        "end game"
                     ]
                 },
                 {
