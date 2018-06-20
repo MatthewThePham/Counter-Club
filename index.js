@@ -1,4 +1,4 @@
-//TODO yes and no intents not working
+//TODO Polish, sound effects, high score
 //counter alexa application
 'use strict';
 const Alexa = require('ask-sdk-core');
@@ -20,7 +20,7 @@ const LaunchRequestHandler = {
       sessionAttributes.correctRandomNum= 0;
       sessionAttributes.stateDetermine= false;
 
-     //sets the default number of list to 5 and score to 0
+     //sets the default list to 6 numbers and score to 0
     attributesManager.setSessionAttributes(sessionAttributes);
 
     const startPrompt= 'Hello fellow human, and welcome to Counter! A list of integer numbers will be given to you.'
@@ -69,9 +69,28 @@ const YesIntentHandler = {
         return request.type === 'IntentRequest' && request.intent.name === 'AMAZON.YesIntent';
     },
     handle(handlerInput){
-        var answer = true;
-        var input = handlerInput;
-        checkAnswer(answer,input);
+       const sessionAttributes = handlerInput.attributesManager.getSessionAttributes();
+        const answer = true;
+
+    if(sessionAttributes.gameState != 'ongoing'){
+        //means the user said yes and the game is over aka they want to restart the game
+        var restartPrompt = 'New round new me. Begin! ';
+        var reprompt = 'Say yes or no depending if the given number was in that list.'
+        +'If you need help, try flipping a coin?';
+
+        sessionAttributes.gameState= 'ongoing';
+        sessionAttributes.score = 0;
+        sessionAttributes.arrayAmount = 5;
+
+        return handlerInput.responseBuilder
+            .speak(restartPrompt+ stringArray(handlerInput))
+            .reprompt(reprompt)
+            .getResponse();
+    }
+    else{
+      return checkAnswer(handlerInput, answer);
+    }
+
     },
 };
 
@@ -81,9 +100,22 @@ const NoIntentHandler = {
         return request.type === 'IntentRequest' && request.intent.name === 'AMAZON.NoIntent';
     },
     handle(handlerInput){
-        var answer = false;
-        var input = handlerInput;
-        checkAnswer(answer,input);
+       const sessionAttributes = handlerInput.attributesManager.getSessionAttributes();
+        const answer = false;
+
+      if(sessionAttributes.gameState != 'ongoing'){
+        //means the user said no and the game is over aka they want to end the game
+        var exitPrompt = 'Hey. See you next time!';
+
+         return handlerInput.responseBuilder
+            .speak(exitPrompt)
+            .getResponse();
+    }
+    else{
+      return checkAnswer(handlerInput, answer);
+    }
+
+        
     },
 };
 
@@ -125,6 +157,7 @@ const ErrorHandler = {
 };
 
 
+
 //makes a string output and creates a correct number value
 function stringArray (handlerInput){
     const sessionAttributes = handlerInput.attributesManager.getSessionAttributes();
@@ -157,48 +190,18 @@ function stringArray (handlerInput){
     return outputString;
 }
 
-
-
- //sees if user answer is correct or not
-function checkAnswer(answer, handlerInput) {
+ //sees if user answer is correct or not and the game is ongoing
+function checkAnswer(handlerInput, answer) {
     const sessionAttributes = handlerInput.attributesManager.getSessionAttributes();
 
-    //sessionAttributes.gameState = 'ongoing'; 
-    var isCorrect = sessionAttributes.stateDetermine;
-    var score = sessionAttributes.score;
-    var amount = sessionAttributes.arrayAmount;
-    var state = sessionAttributes.gameState;
-
-    if(answer === true && state !== 'ongoing'){
-        //means the user said yes and the game is over aka they want to restart the game
-        let restartPrompt = 'New round new me. Begin! ';
-        let reprompt = 'Say yes or no depending if the given number was in that list.'
+    if(answer == sessionAttributes.stateDetermine && sessionAttributes.gameState === 'ongoing'){
+        //means the user answer is correct and the game is not over aka they will continue to the next round
+        var congratzPrompt = '<say-as interpret-as="interjection">booya! </say-as>' + ' Nice one. Next round.';
+        var reprompt = 'Say yes or no depending if the given number was in that list.'
         +'If you need help, try flipping a coin?';
 
-        score = 0;
-        amount = 5;
-
-        return handlerInput.responseBuilder
-            .speak(restartPrompt+ stringArray(handlerInput))
-            .reprompt(reprompt)
-            .getResponse();
-    }
-      else if(answer === false && state !== 'ongoing'){
-        //means the user said no and the game is over aka they want to restart the game
-        let exitPrompt = 'Hey. See you next time!';
-
-         return handlerInput.responseBuilder
-            .speak(exitPrompt)
-            .getResponse();
-    }
-    else if(answer == isCorrect && state === 'ongoing'){
-        //means the user said yes and the game is not over aka they will continue to the next round
-        let congratzPrompt = '<say-as interpret-as="interjection">booya! Nice one. </say-as>' + 'Next round.';
-        let reprompt = 'Say yes or no depending if the given number was in that list.'
-        +'If you need help, try flipping a coin?';
-
-        score = score+1;
-        amount = amount +1 ;
+        sessionAttributes.score = sessionAttributes.score + 1;
+        sessionAttributes.arrayAmount = sessionAttributes.arrayAmount + 2 ;
 
         return handlerInput.responseBuilder
             .speak(congratzPrompt + stringArray(handlerInput))
@@ -206,14 +209,14 @@ function checkAnswer(answer, handlerInput) {
             .getResponse();
     }
     else{
-        //means the user said no and the game is ongoing
-        let correctNum= sessionAttributes.correctRandomNum;
+        //means the user said no and the game is ongoing 
+        var correctNum= sessionAttributes.correctRandomNum;
 
-        let sadPrompt = 'Oh Shucks. The correct number was actually' + correctNum + '. Your total score is ' 
-        + score +'. Would you like to regain your honor?';
-        let reprompt = 'A simple yes or no if you want to play again.';
+        var sadPrompt = 'Oh Shucks. The correct number was actually' + correctNum + '. Your total score is ' 
+        + sessionAttributes.score +'. Would you like to regain your honor?';
+        var reprompt = 'Say yes or no if you want to play again.';
 
-        state = 'ended';
+        sessionAttributes.gameState = 'ended';
 
           return handlerInput.responseBuilder
             .speak(sadPrompt)
