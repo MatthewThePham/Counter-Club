@@ -16,7 +16,7 @@ const LaunchRequestHandler = {
     const sessionAttributes = {};
 
     sessionAttributes.score= 0;
-    sessionAttributes.arrayAmount= 5;
+    sessionAttributes.arrayAmount= 6;
     sessionAttributes.gameState= 'ongoing';
     sessionAttributes.correctRandomNum= 0;
     sessionAttributes.stateDetermine= false;
@@ -83,7 +83,7 @@ const YesIntentHandler = {
 
         sessionAttributes.gameState= 'ongoing';
         sessionAttributes.score = 0;
-        sessionAttributes.arrayAmount = 5;
+        sessionAttributes.arrayAmount = 6;
 
         return handlerInput.responseBuilder
         .speak(restartPrompt+ stringArray(handlerInput))
@@ -170,17 +170,28 @@ function stringArray (handlerInput){
   const NUMS_GIVEN = 20;
 
     //this is randomizer and target value between 0 and max number * 2 
-    const random = Math.floor(Math.random() * (NUMS_GIVEN-1) + 1);
+    const random = Math.floor(Math.random() * (NUMS_GIVEN) + 1);
     sessionAttributes.correctRandomNum = random;
 
-    for (let i = 0; i < sessionAttributes.arrayAmount; i++) {
+    for (let i = 0; i < sessionAttributes.arrayAmount-1; i++) {
         //x and y is the range
         const x=0; const y=20;
 
         //puts random values into a question String
-        questions[i]= Math.floor(Math.random() * ((y-x)+1) + x);
-        outputString= outputString + '<break time=".4s"/>' +  '<emphasis level="reduced"> '+ questions[i] +'</emphasis>';
+        questions[i] = Math.floor(Math.random() * ((y-x)+1) + x);
+        outputString = outputString + '<break time=".4s"/>' +  '<emphasis level="reduced"> '+ questions[i] +'</emphasis>';
       } 
+
+
+    //when the user score reaches 3 add one random strings at the end of the array
+    if(sessionAttributes.score > 5){
+      var trollArray = ['kiwifruit','cherry','watermelon'];
+      var troll = randomizedStrings(trollArray);
+      questions.push(troll);
+      //If want to put in the middle, have to manipulate the top part of the code ie output string. questions.splice(2, 0, troll)
+      //will not work.
+      outputString = outputString + '<break time=".4s"/>' +  '<emphasis level="reduced"> '+ troll +'</emphasis>';
+    }
 
     //checks if the random number was in the list or not
     if(questions.includes(random)){
@@ -223,7 +234,7 @@ function randomizedStrings(stringArray){
         //means the user said no and the game is ongoing 
         var correctNum= sessionAttributes.correctRandomNum;
 
-        var sadPrompt = 'Oh Shucks. The correct number was actually' + correctNum + '. The results are in, you scored a ' 
+        var sadPrompt = 'Sorry. The correct number was actually' + correctNum + '. The results are in, you scored a ' 
         + sessionAttributes.score +' . ' + randomizedStrings(redoArray);
         var reprompt = 'Say yes or no if you want to play again.';
 
