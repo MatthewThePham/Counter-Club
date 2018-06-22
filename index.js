@@ -24,7 +24,7 @@ const LaunchRequestHandler = {
      //sets the default list to 5 numbers and score to 0
      attributesManager.setSessionAttributes(sessionAttributes);
 
-     const startPrompt= 'Greetings, staff volunteer, and welcome to the Counter campus!'
+     const startPrompt= 'Greetings, staff volunteer, and welcome to the Counter institution!'
      + 'Today, we will facilitate a memory test, where a list of integer numbers will be read off to you.'
      + ' Your job is to say, yes, or , no, depending if a given number was in that list , . Ready , ? Begin! ' + stringArray(handlerInput);
 
@@ -43,8 +43,8 @@ const LaunchRequestHandler = {
     return request.type === 'IntentRequest' && request.intent.name === 'AMAZON.HelpIntent';
   },
   handle(handlerInput) {
-    const speechOutput = 'Again, respond with ,yes or no, depending if the given number was in that list , . '
-    +' If you need help deciding, you could always flip a coin, as we do not repeat the list';
+    const speechOutput = 'Again, respond with ,yes, or ,no, depending if the given number was in that list , . '
+    +' If you need help deciding, you could always flip a coin, as testing protocols prevents us from repeating the list.';
     const reprompt = ' Heads for yes, tails for no.';
 
     return handlerInput.responseBuilder
@@ -62,7 +62,7 @@ const ExitHandler = {
  },
  handle(handlerInput) {
   return handlerInput.responseBuilder
-  .speak(' Leaving so soon? Thank you for participating, the counter experiment. ')
+  .speak(' Leaving so soon? Thank you for participating, the Counter experiment. ')
   .getResponse();
 },
 };
@@ -109,7 +109,7 @@ const YesIntentHandler = {
 
      if(sessionAttributes.gameState != 'ongoing'){
         //means the user said no and the game is over aka they want to end the game
-        var exitPrompt = ' The test has concluded. Come back anytime, for another counter experiment!';
+        var exitPrompt = ' The test has concluded. Come back anytime, for another Counter experiment!';
 
         return handlerInput.responseBuilder
         .speak(exitPrompt)
@@ -176,7 +176,7 @@ function stringArray (handlerInput){
     for (let i = 0; i < sessionAttributes.arrayAmount-1; i++) {
         //puts random values into a question String
         questions[i] = Math.floor(Math.random() * ((max-min)+1) + min);
-        outputString = outputString + '<break time="1s"/>' +  '<emphasis level="reduced"> '+ questions[i] +'</emphasis>';
+        outputString = outputString + '<break time="1.2s"/>' +  '<emphasis level="reduced"> '+ questions[i] +'</emphasis>';
       } 
 
     //when the user score reaches every 4rd round add one random big integer at the end of the array
@@ -184,7 +184,7 @@ function stringArray (handlerInput){
       var trollArray = [321, 123 ,432];
       var troll = randomizedStrings(trollArray);
       questions.push(troll);
-      outputString = outputString + '<break time="1s"/>' +  '<emphasis level="reduced"> '+ troll +'</emphasis>';
+      outputString = outputString + '<break time="1.2s"/>' +  '<emphasis level="reduced"> '+ troll +'</emphasis>';
     }
 
     //checks if the random number was in the list or not
@@ -207,13 +207,13 @@ function randomizedStrings(stringArray){
  //sees if user answer is correct or not and the game is ongoing
  function checkAnswer(handlerInput, answer) {
   const sessionAttributes = handlerInput.attributesManager.getSessionAttributes();
-  var correctArray = [' bingo',' booya',' bravo'];
-  var redoArray = [' Would you like to regain your honor?',' Want to redeem yourself?', ' Want to retake the test?'];
+  var correctArray = [' bingo',' booya',' bravo', 'fancy that'];
+  var redoArray = [' Would you like to aim higher?',' Want to improve yourself? ', ' Do you want to retry? ' , ' Want to restart the test? '];
 
   if(answer == sessionAttributes.stateDetermine && sessionAttributes.gameState === 'ongoing'){
         //means the user answer is correct and the game is not over aka they will continue to the next round
         var congratzPrompt = ' Commencing validation, .' + '<say-as interpret-as="interjection"> ' +  randomizedStrings(correctArray) + '</say-as>' 
-        + ' . Next round.  <break time=".4s"/>'
+        + ' . Next round.  <break time=".5s"/>'
         var reprompt = ' Say yes or no depending if the given number was in that list.'
         +' If you need help, some volunteers like to focus on where the concept of numbers came from.';
 
@@ -237,17 +237,19 @@ function randomizedStrings(stringArray){
         if(sessionAttributes.score <= 4){
           defaultRank = ' . , Unfortunately, your memory is, below the minimum baseline. But, I am sure there is room for improvement. ';
         }
-        else if(sessionAttributes.score >= 4){
-          defaultRank = ' . Congratulation, your memory is, just at the required baseline. Good job for being common . ';
-        }
-        else if(sessionAttributes.score >= 8){
-          defaultRank = ' . , Impressive, either you are very, good at guessing, or you have excellent memory. You have surpassed the regular volunteer. ';
+        else if(sessionAttributes.score >= 18){
+           defaultRank = ' . , <say-as interpret-as="interjection"> Oh my </say-as> . This is the end of the ranking system. '
+           + 'You have the honor of reaching genius status, only few volunteers have made it this far. ';
         }
         else if(sessionAttributes.score >= 13){
-          defaultRank = ' . , Wow, you have a strong memory capacity. Most volunteers fail to reach this rank. ';
+          defaultRank = ' . , <say-as interpret-as="interjection"> Wow </say-as> , you have a strong memory capacity.'
+          +' Most volunteers fail to reach this rank. You are a living legend among volunteers. ';
         }
-        else if(sessionAttributes.score >= 18){
-           defaultRank = ' . , This is the end of the ranking system. You have the honor of being the brightest volunteer of the month. ';
+        else if(sessionAttributes.score >= 8){
+          defaultRank = ' . , Impressive, either you are very good at guessing, or you have excellent memory. You have surpassed the common volunteer. ';
+        }
+        else if(sessionAttributes.score >= 4){
+          defaultRank = ' . Congratulations, your memory is, just at the required baseline. Good job for being common . ';
         }
 
         //changes the correct num message
