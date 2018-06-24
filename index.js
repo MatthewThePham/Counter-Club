@@ -1,5 +1,5 @@
-//TODO Maybe after 3 rounds, start adding random words?
-//LONG TERM Polish, sound effects, high score
+//TODO Polish, high score
+//LONG TERM Polish high score
 //counter alexa application
 'use strict';
 const Alexa = require('ask-sdk-core');
@@ -16,7 +16,7 @@ const LaunchRequestHandler = {
     const sessionAttributes = {};
 
     sessionAttributes.score= 0;
-    sessionAttributes.arrayAmount= 5;
+    sessionAttributes.arrayAmount= 6;
     sessionAttributes.gameState= 'ongoing';
     sessionAttributes.correctRandomNum= 0;
     sessionAttributes.stateDetermine= false;
@@ -54,19 +54,6 @@ const LaunchRequestHandler = {
   },
 };
 
-const ExitHandler = {
-  canHandle(handlerInput) {
-   const request = handlerInput.requestEnvelope.request;
-   return request.type === 'IntentRequest'
-   && (request.intent.name === 'AMAZON.CancelIntent' || request.intent.name === 'AMAZON.StopIntent');
- },
- handle(handlerInput) {
-  return handlerInput.responseBuilder
-  .speak(' Leaving so soon? Thank you for participating, the Counter experiment. ')
-  .getResponse();
-},
-};
-
 const YesIntentHandler = {
   canHandle(handlerInput){
     const request = handlerInput.requestEnvelope.request;
@@ -84,80 +71,100 @@ const YesIntentHandler = {
 
         sessionAttributes.gameState= 'ongoing';
         sessionAttributes.score = 0;
-        sessionAttributes.arrayAmount = 5;
+        sessionAttributes.arrayAmount = 6;
 
         return handlerInput.responseBuilder
         .speak(restartPrompt+ stringArray(handlerInput))
         .reprompt(reprompt)
         .getResponse();
       }
-      else{
-        return checkAnswer(handlerInput, answer);
-      }
+    else{
+      return checkAnswer(handlerInput, answer);
+    }
 
     },
   };
 
-  const NoIntentHandler = {
-    canHandle(handlerInput){
+const NoIntentHandler = {
+  canHandle(handlerInput){
       const request = handlerInput.requestEnvelope.request;
       return request.type === 'IntentRequest' && request.intent.name === 'AMAZON.NoIntent';
-    },
-    handle(handlerInput){
-     const sessionAttributes = handlerInput.attributesManager.getSessionAttributes();
-     const answer = false;
+  },
+  handle(handlerInput){
+    const sessionAttributes = handlerInput.attributesManager.getSessionAttributes();
+    const answer = false;
 
-     if(sessionAttributes.gameState != 'ongoing'){
-        //means the user said no and the game is over aka they want to end the game
-        var exitPrompt = ' The test has concluded. Come back anytime, for another Counter experiment!';
+    if(sessionAttributes.gameState != 'ongoing'){
+       //means the user said no and the game is over aka they want to end the game
+       var exitPrompt = ' The test has concluded. Come back anytime, for another Counter experiment!';
 
-        return handlerInput.responseBuilder
+      return handlerInput.responseBuilder
         .speak(exitPrompt)
         .getResponse();
-      }
-      else{
-        return checkAnswer(handlerInput, answer);
-      }
+    }
+    else{
+      return checkAnswer(handlerInput, answer);
+    }
 
-    },
-  };
+  },
+};
 
-  const SessionEndedRequestHandler = {
-    canHandle(handlerInput) {
-      return handlerInput.requestEnvelope.request.type === 'SessionEndedRequest';
-    },
-    handle(handlerInput) {
-      console.log('Session ended with ${handlerInput.requestEnvelope.request.reason}');
-      return handlerInput.responseBuilder.getResponse();
-    },
-  };
 
-  const UnhandledIntentHandler = {
-    canHandle() {
-      return true;
-    },
-    handle(handlerInput) {
+const ExitHandler = {
+  canHandle(handlerInput) {
+   const request = handlerInput.requestEnvelope.request;
+   return request.type === 'IntentRequest'
+   && (request.intent.name === 'AMAZON.CancelIntent' || request.intent.name === 'AMAZON.StopIntent');
+ },
+ handle(handlerInput) {
+  return handlerInput.responseBuilder
+    .speak(' Leaving so soon? Thank you for participating in the Counter experiment. ')
+    .getResponse();
+  },
+};
+
+
+//as of 2018, only works in english united states? This catch all is not working currently WHY AMAZON.
+// Unhandled intents get pushed to some sort of default fallback prebuilt by amazon so no custom message appears?
+const FallbackHandler = {
+  canHandle(handlerInput) {
+    return handlerInput.requestEnvelope.request.type === 'IntentRequest'
+      && handlerInput.requestEnvelope.request.intent.name === 'AMAZON.FallbackIntent';
+  },
+  handle(handlerInput) {
       const respondSpeech = ' Sorry but all I can understand is yes and no. Please say yes or no if the number was on the list';
       return handlerInput.responseBuilder
-      .speak(respondSpeech)
-      .reprompt(respondSpeech)
-      .getResponse();
-    },
-  };
+        .speak(respondSpeech)
+        .reprompt(respondSpeech)
+        .getResponse();
+  },
+};
 
-  const ErrorHandler = {
-    canHandle() {
+
+const SessionEndedRequestHandler = {
+  canHandle(handlerInput) {
+    return handlerInput.requestEnvelope.request.type === 'SessionEndedRequest';
+  },
+  handle(handlerInput) {
+    console.log('Session ended with ${handlerInput.requestEnvelope.request.reason}');
+    return handlerInput.responseBuilder.getResponse();
+  },
+};
+
+const ErrorHandler = {
+  canHandle() {
       return true;
-    },
-    handle(handlerInput, error) {
-      console.log('Error handled: ${error.message}');
+  },
+  handle(handlerInput, error) {
+    console.log('Error handled: ${error.message}');
 
-      return handlerInput.responseBuilder
-      .speak(' Sorry, I can\'t understand the command. Speak loud and clear.')
-      .reprompt(' Sorry, I can\'t understand the command. Speak a bit louder and clearer.')
-      .getResponse();
-    },
-  };
+    const respondSpeech = ' Sorry but all I can understand is yes and no. Please say yes or no if the number was on the list';
+    return handlerInput.responseBuilder
+    .speak(respondSpeech)
+    .reprompt(respondSpeech)
+    .getResponse();
+  },
+};
 
 //makes a string output and creates a correct number value
 function stringArray (handlerInput){
@@ -180,8 +187,8 @@ function stringArray (handlerInput){
       } 
 
     //when the user score reaches every 4rd round add one random big integer at the end of the array
-    if(sessionAttributes.score % 4 == 0 && sessionAttributes.score != 0){
-      var trollArray = [321, 123 ,432];
+    if(sessionAttributes.score % 5 == 0 && sessionAttributes.score != 0){
+      var trollArray = [321, 123 ,432 ,234];
       var troll = randomizedStrings(trollArray);
       questions.push(troll);
       outputString = outputString + '<break time="1.2s"/>' +  '<emphasis level="reduced"> '+ troll +'</emphasis>';
@@ -207,8 +214,8 @@ function randomizedStrings(stringArray){
  //sees if user answer is correct or not and the game is ongoing
  function checkAnswer(handlerInput, answer) {
   const sessionAttributes = handlerInput.attributesManager.getSessionAttributes();
-  var correctArray = [' bingo',' booya',' bravo', 'fancy that'];
-  var redoArray = [' Would you like to aim higher?',' Want to improve yourself? ', ' Do you want to retry? ' , ' Want to restart the test? '];
+  var correctArray = [' bingo',' booya',' bravo'];
+  var redoArray = [' Would you like to redo the test?',' Would you like to improve your score? ', ' Do you want to retry? ' , ' Want to restart the test? '];
 
   if(answer == sessionAttributes.stateDetermine && sessionAttributes.gameState === 'ongoing'){
         //means the user answer is correct and the game is not over aka they will continue to the next round
@@ -218,7 +225,10 @@ function randomizedStrings(stringArray){
         +' If you need help, some volunteers like to focus on where the concept of numbers came from.';
 
         sessionAttributes.score = sessionAttributes.score + 1;
-        sessionAttributes.arrayAmount = sessionAttributes.arrayAmount + 1 ;
+
+        if(sessionAttributes.score % 2 == 0 && sessionAttributes.score != 0){
+          sessionAttributes.arrayAmount = sessionAttributes.arrayAmount + 1 ;
+        }
 
         return handlerInput.responseBuilder
         .speak(congratzPrompt + stringArray(handlerInput))
@@ -226,41 +236,35 @@ function randomizedStrings(stringArray){
         .getResponse();
       }
       else{
-        //means the user said no and the game is ongoing 
+          //means the user said no and the game is ongoing 
         var correctNum = sessionAttributes.correctRandomNum;
-        var defaultRank = 'NaN';
-        var sadPrompt = 'NaN';
+        var defaultRank = ' . , Unfortunately, your memory is, below the minimum baseline. But, I am sure there is room for improvement. '; //user got a score less than 3
+        var sadPrompt = 'Sorry. But , ' + correctNum + ', was not in the list. Your score results are in, you scored a , '; //user said yes and they are wrong
         var reprompt = ' Say yes or no if you want to play again.';
         sessionAttributes.gameState = 'ended';
 
         //congradulatory message based on what score the user got
-        if(sessionAttributes.score <= 4){
-          defaultRank = ' . , Unfortunately, your memory is, below the minimum baseline. But, I am sure there is room for improvement. ';
+        if(sessionAttributes.score >= 18){
+           defaultRank = ' . , <say-as interpret-as="interjection"> Oh my </say-as> . '
+           + 'Most volunteers fail to reach this rank. You are a living legend among volunteers. ';
         }
-        else if(sessionAttributes.score >= 18){
-           defaultRank = ' . , <say-as interpret-as="interjection"> Oh my </say-as> . This is the end of the ranking system. '
-           + 'You have the honor of reaching genius status, only few volunteers have made it this far. ';
-        }
-        else if(sessionAttributes.score >= 13){
-          defaultRank = ' . , <say-as interpret-as="interjection"> Wow </say-as> , you have a strong memory capacity.'
-          +' Most volunteers fail to reach this rank. You are a living legend among volunteers. ';
+        else if(sessionAttributes.score >= 12){
+          defaultRank = ' . , <say-as interpret-as="interjection"> Wow </say-as> , you have a strong mental capacity.'
+          +' You should be a professional, in the field of mathematics. ';
         }
         else if(sessionAttributes.score >= 8){
           defaultRank = ' . , Impressive, either you are very good at guessing, or you have excellent memory. You have surpassed the common volunteer. ';
         }
-        else if(sessionAttributes.score >= 4){
-          defaultRank = ' . Congratulations, your memory is, just at the required baseline. Good job for being common . ';
+        else if(sessionAttributes.score >= 5){
+          defaultRank = ' . Congratulation , your memory is, just at the required baseline. Good job for being common. ';
         }
 
-        //changes the correct num message
+        //changes the correct sadPrompt
         if(answer == false ){
           //means they said no and are wrong
           sadPrompt = 'Sorry. But , ' + correctNum + ', was in the list. Your score results are in, you scored a , ';
         }
-        else{
-          //means they said yes and are wrong
-          sadPrompt = 'Sorry. But , ' + correctNum + ', was not in the list. Your score results are in, you scored a , ';
-        }
+
         sadPrompt = sadPrompt + sessionAttributes.score + defaultRank + randomizedStrings(redoArray);
 
         return handlerInput.responseBuilder
@@ -276,11 +280,11 @@ function randomizedStrings(stringArray){
     .addRequestHandlers(
       LaunchRequestHandler,
       HelpIntentHandler,
-      ExitHandler,
       YesIntentHandler,
       NoIntentHandler,
-      SessionEndedRequestHandler,
-      UnhandledIntentHandler
+      ExitHandler,
+      FallbackHandler,
+      SessionEndedRequestHandler
       )
     .addErrorHandlers(ErrorHandler)
 //.withTableName('')
