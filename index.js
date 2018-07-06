@@ -24,7 +24,7 @@ const LaunchRequestHandler = {
      //sets the default list to 5 numbers and score to 0
      attributesManager.setSessionAttributes(sessionAttributes);
 
-     const startPrompt= 'Greetings, staff volunteer, and welcome to the Counter institution!'
+     const startPrompt= 'Greetings, staff volunteer, and welcome to the Counter Society!'
      + 'Today, we will facilitate a memory test, where a list of integer numbers will be read off to you.'
      + ' Your job is to say, yes, or , no, depending if a given number was in that list , . Ready , ? Begin! ' + stringArray(handlerInput);
 
@@ -183,7 +183,7 @@ function stringArray (handlerInput){
     for (let i = 0; i < sessionAttributes.arrayAmount-1; i++) {
         //puts random values into a question String
         questions[i] = Math.floor(Math.random() * ((max-min)+1) + min);
-        outputString = outputString + '<break time="1.2s"/>' +  '<emphasis level="reduced"> '+ questions[i] +'</emphasis>';
+        outputString = outputString + '<break time=".6s"/>' +  '<emphasis level="reduced"> '+ questions[i] +'</emphasis>';
       } 
 
     //when the user score reaches every 4rd round add one random big integer at the end of the array
@@ -191,7 +191,7 @@ function stringArray (handlerInput){
       var trollArray = [321, 123 ,432 ,234];
       var troll = randomizedStrings(trollArray);
       questions.push(troll);
-      outputString = outputString + '<break time="1.2s"/>' +  '<emphasis level="reduced"> '+ troll +'</emphasis>';
+      outputString = outputString + '<break time=".6s"/>' +  '<emphasis level="reduced"> '+ troll +'</emphasis>';
     }
 
     //checks if the random number was in the list or not
@@ -214,19 +214,22 @@ function randomizedStrings(stringArray){
  //sees if user answer is correct or not and the game is ongoing
  function checkAnswer(handlerInput, answer) {
   const sessionAttributes = handlerInput.attributesManager.getSessionAttributes();
-  var correctArray = [' bingo',' booya',' bravo'];
+  var correctArray = [' bingo. ',' booya.',' bravo.' , ' hurray. ' , ' eureka. ', ' well done. ',' Wowzer. '];
+  var rightArray = [' I am so proud. ',' Killing spree. ',' You nailed it. ', ' Plus one genius points. ' , ' Another one bites the dust. ' , ' Play of the game. ', ' What a legend. '];
+
+  var failArray = [' le sigh. ',' aw man. ' , ' blast. ' , ' oof. ' , ' wah wah. '];
   var redoArray = [' Would you like to redo the test?',' Would you like to improve your score? ', ' Do you want to retry? ' , ' Want to restart the test? '];
 
   if(answer == sessionAttributes.stateDetermine && sessionAttributes.gameState === 'ongoing'){
         //means the user answer is correct and the game is not over aka they will continue to the next round
-        var congratzPrompt = ' Commencing validation, .' + '<say-as interpret-as="interjection"> ' +  randomizedStrings(correctArray) + '</say-as>' 
-        + ' . Next round.  <break time=".5s"/>'
+        var congratzPrompt = '<say-as interpret-as="interjection"> ' +  randomizedStrings(correctArray)  + '</say-as>' 
+        + randomizedStrings(rightArray)+ ' . Next round.  <break time=".5s"/>'
         var reprompt = ' Say yes or no depending if the given number was in that list.'
         +' If you need help, some volunteers like to focus on where the concept of numbers came from.';
 
         sessionAttributes.score = sessionAttributes.score + 1;
 
-        if(sessionAttributes.score % 2 == 0 && sessionAttributes.score != 0){
+        if(sessionAttributes.score % 2 == 0 && sessionAttributes.score != 0 && sessionAttributes.arrayAmount != 7){
           sessionAttributes.arrayAmount = sessionAttributes.arrayAmount + 1 ;
         }
 
@@ -236,10 +239,11 @@ function randomizedStrings(stringArray){
         .getResponse();
       }
       else{
-          //means the user said no and the game is ongoing 
+         //means the user is false and the  and the game is ongoing 
         var correctNum = sessionAttributes.correctRandomNum;
         var defaultRank = ' . , Unfortunately, your memory is, below the minimum baseline. But, I am sure there is room for improvement. '; //user got a score less than 3
-        var sadPrompt = 'Sorry. But , ' + correctNum + ', was not in the list. Your score results are in, you scored a , '; //user said yes and they are wrong
+        var sadPrompt = '<say-as interpret-as="interjection"> ' + randomizedStrings(failArray) + '</say-as>' 
+        + ' Sorry. But , ' + correctNum + ', was not in the list. Your score results are in, you scored a , '; //user said yes and they are wrong
         var reprompt = ' Say yes or no if you want to play again.';
         sessionAttributes.gameState = 'ended';
 
@@ -253,16 +257,10 @@ function randomizedStrings(stringArray){
           +' You should be a professional, in the field of mathematics. ';
         }
         else if(sessionAttributes.score >= 8){
-          defaultRank = ' . , Impressive, either you are very good at guessing, or you have excellent memory. You have surpassed the common volunteer. ';
+          defaultRank = ' . , Impressive, either you are very good at guessing, or you have excellent memory. You have surpassed the commoner volunteer. ';
         }
         else if(sessionAttributes.score >= 5){
-          defaultRank = ' . Congratulation , your memory is, just at the required baseline. Good job for being common. ';
-        }
-
-        //changes the correct sadPrompt
-        if(answer == false ){
-          //means they said no and are wrong
-          sadPrompt = 'Sorry. But , ' + correctNum + ', was in the list. Your score results are in, you scored a , ';
+          defaultRank = ' . Congratulation , your memory is, just at the required baseline. Good job for being a commoner. ';
         }
 
         sadPrompt = sadPrompt + sessionAttributes.score + defaultRank + randomizedStrings(redoArray);
