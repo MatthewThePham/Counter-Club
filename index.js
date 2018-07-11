@@ -3,6 +3,8 @@
 //LONG TERM Polish high score
 //counter alexa application
 const Alexa = require('ask-sdk');
+const FALLBACK_MESSAGE = ' Sorry but all I can understand is yes and no. Please say yes or no. ';
+const FALLBACK_REPROMPT = ' Please say yes or no. ';
 
 //starts the app from this handler
 const LaunchRequestHandler = {
@@ -148,23 +150,6 @@ const ExitHandler = {
   },
 };
 
-/*
-//as of 2018, only works in english united states? This catch all is not working currently WHY AMAZON.
-// Unhandled intents get pushed to some sort of default fallback prebuilt by amazon so no custom message appears?
-const FallbackHandler = {
-  canHandle(handlerInput) {
-    return handlerInput.requestEnvelope.request.type === 'IntentRequest'
-      && handlerInput.requestEnvelope.request.intent.name === 'AMAZON.FallbackIntent';
-  },
-  handle(handlerInput) {
-      const respondSpeech = ' Sorry but all I can understand is yes and no. Please say yes or no if the number was on the list';
-      return handlerInput.responseBuilder
-        .speak(respondSpeech)
-        .reprompt(respondSpeech)
-        .getResponse();
-  },
-};
-*/
 
 const SessionEndedRequestHandler = {
   canHandle(handlerInput) {
@@ -176,7 +161,6 @@ const SessionEndedRequestHandler = {
   },
 };
 
-/*
 const ErrorHandler = {
   canHandle() {
       return true;
@@ -191,7 +175,22 @@ const ErrorHandler = {
     .getResponse();
   },
 };
-*/
+
+//as of 2018, only works in english united states? This catch all is not working currently WHY AMAZON.
+// Unhandled intents get pushed to some sort of default fallback prebuilt by amazon so no custom message appears?
+const FallbackHandler = {
+  canHandle(handlerInput) {
+   const request = handlerInput.requestEnvelope.request;
+    return request.type === 'IntentRequest' && request.intent.name == 'AMAZON.FallbackIntent';
+  },
+  handle(handlerInput) {
+      //const respondSpeech = ' Sorry but all I can understand is yes and no. Please say yes or no if the number was on the list';
+      return handlerInput.responseBuilder
+        .speak(FALLBACK_MESSAGE)
+        .reprompt(FALLBACK_REPROMPT)
+        .getResponse();
+  },
+};
 
 //makes a string output and creates a correct number value
 function stringArray (handlerInput){
@@ -326,11 +325,10 @@ function randomizedStrings(stringArray){
       YesIntentHandler,
       NoIntentHandler,
       ExitHandler,
-      //FallbackHandler,
+      FallbackHandler,
       SessionEndedRequestHandler
       )
-    //.addErrorHandlers(ErrorHandler)
+    .addErrorHandlers(ErrorHandler)
 .withTableName('counter')
-//is auto created needed? gives an error
 .withAutoCreateTable(true)
 .lambda();
