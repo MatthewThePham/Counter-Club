@@ -1,8 +1,8 @@
-//TODO Polish, high score
+//TODO Decide where aunc functions should go and add persistent data
+//+ Persistent data uses DyamoDBPersistentAdapter which is included in ask-sdk not ask-sdk-core
 //LONG TERM Polish high score
 //counter alexa application
-'use strict';
-const Alexa = require('ask-sdk-core');
+const Alexa = require('ask-sdk');
 
 //starts the app from this handler
 const LaunchRequestHandler = {
@@ -10,12 +10,21 @@ const LaunchRequestHandler = {
     const request = handlerInput.requestEnvelope.request;
     return request.type === 'LaunchRequest';
   },
-  handle(handlerInput){
+   async handle(handlerInput){
     const attributesManager  = handlerInput.attributesManager;
+    var sessionAttributes = await attributesManager.getPersistentAttributes() || {};
 
-    const sessionAttributes = {};
+    if (Object.keys(sessionAttributes).length === 0){
+      sessionAttributes.highScore = 0;
+     // sessionAttributes.roundPlay=0;
+    }
 
-    sessionAttributes.score= 0;
+    var startPrompt = 'Greetings, staff volunteer, and welcome to the Counter Society!'
+     + 'Today, we will facilitate a memory test, where a list of integer numbers will be read off to you.'
+     + ' Your job is to say, yes, or , no, depending if a given number was in that list , . Ready , ? Begin! ';
+    const reprompt = ' , If you need help deciding, some volunteers flip a coin in desperation. ';
+
+    sessionAttributes.score = 0;
     sessionAttributes.arrayAmount= 6;
     sessionAttributes.gameState= 'ongoing';
     sessionAttributes.correctRandomNum= 0;
@@ -24,14 +33,30 @@ const LaunchRequestHandler = {
      //sets the default list to 5 numbers and score to 0
      attributesManager.setSessionAttributes(sessionAttributes);
 
-     const startPrompt= 'Greetings, staff volunteer, and welcome to the Counter Society!'
-     + 'Today, we will facilitate a memory test, where a list of integer numbers will be read off to you.'
-     + ' Your job is to say, yes, or , no, depending if a given number was in that list , . Ready , ? Begin! ' + stringArray(handlerInput);
 
-    const reprompt = ' , If you need help deciding, some volunteers flip a coin in desperation. ';
+    if(sessionAttributes.highScore != 0){
 
+      var defaultRank = ' human infant. '; //user got a score less than 3
+        if(sessionAttributes.highScore >= 18){
+          defaultRank = ' expert math wizard. '
+        }
+        else if(sessionAttributes.highScore >= 12){
+          defaultRank = ' low level math wizard. ';
+        }
+        else if(sessionAttributes.highScore >= 8){
+          defaultRank = ' math magician. ';
+        }
+        else if(sessionAttributes.highScore >= 5){
+          defaultRank = ' common human. ';
+        }
+
+      startPrompt = ' Welcome back, senior staff volunteer. Your current benchmark is , ' + defaultRank 
+        +' or ' + sessionAttributes.highScore.toString() + ' out of 18 genius points. ' + ' , . Time for another test. Ready , ? Begin! ';
+    }
+
+    
      return handlerInput.responseBuilder
-     .speak(startPrompt)
+     .speak(startPrompt + stringArray(handlerInput) )
      .reprompt(reprompt)
      .getResponse();
    },
@@ -123,7 +148,7 @@ const ExitHandler = {
   },
 };
 
-
+/*
 //as of 2018, only works in english united states? This catch all is not working currently WHY AMAZON.
 // Unhandled intents get pushed to some sort of default fallback prebuilt by amazon so no custom message appears?
 const FallbackHandler = {
@@ -139,7 +164,7 @@ const FallbackHandler = {
         .getResponse();
   },
 };
-
+*/
 
 const SessionEndedRequestHandler = {
   canHandle(handlerInput) {
@@ -151,6 +176,7 @@ const SessionEndedRequestHandler = {
   },
 };
 
+/*
 const ErrorHandler = {
   canHandle() {
       return true;
@@ -165,6 +191,7 @@ const ErrorHandler = {
     .getResponse();
   },
 };
+*/
 
 //makes a string output and creates a correct number value
 function stringArray (handlerInput){
@@ -212,10 +239,10 @@ function randomizedStrings(stringArray){
 }
 
  //sees if user answer is correct or not and the game is ongoing
- function checkAnswer(handlerInput, answer) {
+ async function checkAnswer(handlerInput, answer) {
   const sessionAttributes = handlerInput.attributesManager.getSessionAttributes();
   var correctArray = [' bingo. ',' booya.',' bravo.' , ' hurray. ' , ' eureka. ', ' well done. ',' Wowzer. '];
-  var rightArray = [' I am so proud. ',' Killing spree. ',' You nailed it. ', ' Plus one genius points. ' , ' Another one bites the dust. ' , ' Play of the game. ', ' What a legend. '];
+  var rightArray = [' I am so proud. ',' Killing spree. ',' You nailed it. ', ' Plus one, genius points. ' , ' Another one bites the dust. ' , ' Play of the game. ', ' What a legend. '];
 
   var failArray = [' le sigh. ',' aw man. ' , ' blast. ' , ' oof. ' , ' wah wah. '];
   var redoArray = [' Would you like to redo the test?',' Would you like to improve your score? ', ' Do you want to retry? ' , ' Want to restart the test? '];
@@ -229,7 +256,17 @@ function randomizedStrings(stringArray){
 
         sessionAttributes.score = sessionAttributes.score + 1;
 
-        if(sessionAttributes.score % 2 == 0 && sessionAttributes.score != 0 && sessionAttributes.arrayAmount != 7){
+
+        //sets the user high score
+        if(sessionAttributes.score > sessionAttributes.highScore ){
+          sessionAttributes.highScore = sessionAttributes.score;
+          
+          await handlerInput.attributesManager.setPersistentAttributes(sessionAttributes);
+          handlerInput.attributesManager.savePersistentAttributes();
+        }
+
+        //sets every other round increment, and capps the amount of numbers to 6 
+        if(sessionAttributes.score % 3 == 0 && sessionAttributes.score != 0 && sessionAttributes.arrayAmount != 8){
           sessionAttributes.arrayAmount = sessionAttributes.arrayAmount + 1 ;
         }
 
@@ -242,8 +279,16 @@ function randomizedStrings(stringArray){
          //means the user is false and the  and the game is ongoing 
         var correctNum = sessionAttributes.correctRandomNum;
         var defaultRank = ' . , Unfortunately, your memory is, below the minimum baseline. But, I am sure there is room for improvement. '; //user got a score less than 3
+
         var sadPrompt = '<say-as interpret-as="interjection"> ' + randomizedStrings(failArray) + '</say-as>' 
-        + ' Sorry. But , ' + correctNum + ', was not in the list. Your score results are in, you scored a , '; //user said yes and they are wrong
+        + ' Sorry. But , ' + correctNum ;
+
+        if(answer === false) { //if the user said no, meaning it was in the list
+          sadPrompt = sadPrompt + ', was inside of the list. Your score results are in, you scored a , '; 
+        }else{
+          sadPrompt = sadPrompt + ', was not in the list. Your score results are in, you scored a , '; //user said yes and it was not in the list
+        }
+
         var reprompt = ' Say yes or no if you want to play again.';
         sessionAttributes.gameState = 'ended';
 
@@ -271,8 +316,8 @@ function randomizedStrings(stringArray){
         .getResponse();
       }
     }
-
-    const skillBuilder = Alexa.SkillBuilders.custom();
+//needed for DyamboDB
+  const skillBuilder = Alexa.SkillBuilders.standard();
 
     exports.handler = skillBuilder
     .addRequestHandlers(
@@ -281,10 +326,11 @@ function randomizedStrings(stringArray){
       YesIntentHandler,
       NoIntentHandler,
       ExitHandler,
-      FallbackHandler,
+      //FallbackHandler,
       SessionEndedRequestHandler
       )
-    .addErrorHandlers(ErrorHandler)
-//.withTableName('')
-//.withAutoCreateTable(true)
+    //.addErrorHandlers(ErrorHandler)
+.withTableName('counter')
+//is auto created needed? gives an error
+.withAutoCreateTable(true)
 .lambda();
