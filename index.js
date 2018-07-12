@@ -223,8 +223,8 @@
   //sees if user answer is correct or not and the game is ongoing
   async function checkAnswer(handlerInput, answer) {
       const sessionAttributes = handlerInput.attributesManager.getSessionAttributes();
-      var correctArray = [' bingo. ', ' booya.', ' bravo.', ' hurray. ', ' eureka. ', ' well done. ', ' Wowzer. '];
-      var rightArray = [' I am so proud. ', ' Killing spree. ', ' You nailed it. ', ' Plus one genius points. ', ' Another one bites the dust. ', ' Play of the game. ', ' What a legend. '];
+      var correctArray = [' bingo. ', ' booya. ', ' bravo. ', ' hurray. ', ' eureka. ', ' well done. ', ' Wowzer. '];
+      var rightArray = [' flawless round. ', ' Killing spree. ', ' You nailed it. ', ' Plus one genius point. ', ' Another one bites the dust. ', ' Play of the game. ', ' What a legend. '];
       var failArray = [' le sigh. ', ' aw man. ', ' blast. ', ' oof. ', ' wah wah. '];
       var redoArray = [' Would you like to redo the exercise?', ' Would you like to improve your score? ', ' Do you want to retry? ', ' Want to restart the exercise? '];
 
