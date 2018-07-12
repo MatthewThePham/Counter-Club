@@ -9,25 +9,38 @@
                 },
                 {
                     "name": "AMAZON.HelpIntent",
-                    "samples": [
-                        "say it again",
-                        "repeat"
-                    ]
+                    "samples": []
                 },
                 {
                     "name": "AMAZON.StopIntent",
-                    "samples": [
-                        "exit game",
-                        "end game"
-                    ]
+                    "samples": []
                 },
                 {
                     "name": "AMAZON.YesIntent",
                     "samples": []
                 },
                 {
+                    "name": "AMAZON.FallbackIntent",
+                    "samples": []
+                },
+                {
                     "name": "AMAZON.NoIntent",
                     "samples": []
+                },
+                {
+                    "name": "NumberGuessIntent",
+                    "slots": [
+                        {
+                            "name": "number",
+                            "type": "AMAZON.NUMBER"
+                        }
+                    ],
+                    "samples": [
+                        "{number}",
+                        "is it {number}",
+                        "how about {number}",
+                        "could be {number}"
+                    ]
                 }
             ],
             "types": []
