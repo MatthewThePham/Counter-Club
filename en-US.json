@@ -1,7 +1,7 @@
 {
     "interactionModel": {
         "languageModel": {
-            "invocationName": "counter",
+            "invocationName": "remember this",
             "intents": [
                 {
                     "name": "AMAZON.CancelIntent",
