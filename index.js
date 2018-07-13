@@ -1,4 +1,4 @@
-  //counter alexa application
+  //SKILL NAME = 'Remember this!''
   const Alexa = require('ask-sdk');
   const FALLBACK_MESSAGE = ' Sorry , but yes , or no, is all I can understand. Please say ,yes ,or , no , . ';
   const FALLBACK_REPROMPT = ' Please say ,yes ,or , no , . ';
@@ -43,7 +43,7 @@
               }
 
               startPrompt = ' Welcome back, to the counter society. Your current benchmark is , ' + defaultRank +
-                  ' or a numbered ranking of ' + sessionAttributes.highScore.toString() + ' out of 18 genius points. ' + ' , . Ready yourself , for another mind exercise! ';
+                  ' , or a numbered ranking of ' + sessionAttributes.highScore.toString() + ' out of 18 genius points. ' + ' . Get ready , for another mind exercise! ';
           }
 
           return handlerInput.responseBuilder
