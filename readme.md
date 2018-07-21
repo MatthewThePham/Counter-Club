@@ -1,4 +1,4 @@
-# Remember This! - Number based memory game.
+# Counter Club! - Number based memory game.
 
 This is an Alexa game which tests your memory by reading out a random list of numbers.
 It then checks if you can recall a certain number on that list.
@@ -9,7 +9,7 @@ __Features__
 * Fallback handler for unhandled user input.
 
 ### Live example
-To try a live example of this skill, you can enable the [Remember This!](https://www.amazon.com/NotMatt-Counter-Club/dp/B07FNK6TR8/ref=sr_1_1?s=digital-skills&ie=UTF8&qid=1532144294&sr=1-1&keywords=counter+club). Just say: `Alexa, enable Counter Club` and then `Alexa, open Counter Club`.
+To try a live example of this skill, you can enable the skill [Counter Club](https://www.amazon.com/NotMatt-Counter-Club/dp/B07FNK6TR8/ref=sr_1_1?s=digital-skills&ie=UTF8&qid=1532144294&sr=1-1&keywords=counter+club). Just say: `Alexa, enable Counter Club` and then `Alexa, open Counter Club`.
 
 ### Development of skill
 
