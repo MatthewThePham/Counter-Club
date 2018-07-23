@@ -1,12 +1,13 @@
 # Counter Club! - Number based memory game.
 
-This is an Alexa game which tests your memory by reading out a random list of numbers.
-It then checks if you can recall a certain number on that list.
+An Alexa game which tests your memory by reading out a random list of numbers. It then checks if you can recall a certain number on that list.
+See how far your memory can take you as you earn a score ranking depending on how well you preform!
 
 __Features__
-* High score with Dynamodb.
-* Added Speechcon for personality.
+* High scores through Amazon Dynamodb.
+* Speechcons for added personality.
 * Fallback handler for unhandled user input.
+* Increased mental capacity after playing 47 game sessions.
 
 ### Live example
 To try a live example of this skill, you can enable the skill [Counter Club](https://www.amazon.com/NotMatt-Counter-Club/dp/B07FNK6TR8/ref=sr_1_1?s=digital-skills&ie=UTF8&qid=1532144294&sr=1-1&keywords=counter+club). Just say: `Alexa, enable Counter Club` and then `Alexa, open Counter Club`.
