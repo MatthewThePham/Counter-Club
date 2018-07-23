@@ -1,7 +1,7 @@
-# Counter Club! - Number based memory game.
+# Counter Club! - Alexa Game Skill.
 
-An Alexa game which tests your memory by reading out a random list of numbers. It then checks if you can recall a certain number on that list. <br />
-See how far your memory can take you as you earn a score ranking depending on how well you preform!
+A game developed for the Alexa skill store which tests your memory by reading out a randomized list of numbers. It then checks if you recall a certain number from that list. <br />
+See how far your memory by earning a ranked score depending on how well you preform!
 
 ### Features
 * High scores through Amazon Dynamodb.
