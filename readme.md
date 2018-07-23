@@ -16,5 +16,3 @@ To try a live example of this skill, you can enable the skill [Counter Club](htt
 
 This skill uses the [Alexa Skills Kit SDK 2.0 for Node.js](https://github.com/alexa/alexa-skills-kit-sdk-for-nodejs) and also [Amazon Dynamodb](https://aws.amazon.com/dynamodb/) for storing user high score.
 Programming language used was node.js.
-
-Reference code used to help make game was [high-low-game](https://github.com/alexa/skill-sample-nodejs-highlowgame/blob/master/lambda/custom/index.js).
