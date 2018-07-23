@@ -1,7 +1,7 @@
 # Counter Club! - Alexa Game Skill.
 
-A game developed for the Alexa skill store which tests your memory by reading out a randomized list of numbers. It then checks if you recall a certain number from that list. <br />
-See how far you can reach, and earn ranked scores depending on how well you preform!
+A game developed for the Alexa skill store which tests your memory by reading out a randomized list of numbers. <br />
+It then checks if you recall a certain number from that list. See how far you can reach, and earn ranked scores depending on how well you preform!
 
 ### Features
 * High scores through Amazon Dynamodb.
