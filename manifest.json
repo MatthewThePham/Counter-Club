@@ -1,0 +1,28 @@
+{
+  "manifest": {
+    "publishingInformation": {
+      "locales": {
+        "en-US": {
+          "summary": "Guess a number, and Alexa will tell you if you need to guess higher or lower.",
+          "examplePhrases": [
+            "Alexa, open Counter Club."
+          ],
+          "name": "Counter Club",
+          "description": "You have decided to volunteer at the Counter club which specializes in number based memory exercises! Take the test yourself and see if you can remember well enough to earn a passing score. You will earn a rating based on how well you do."
+        }
+      },
+      "isAvailableWorldwide": true,
+      "testingInstructions": "Responding with yes or no when a question is asked. The fallback handler is active.",
+      "category": "Games",
+      "distributionCountries": []
+    },
+    "apis": {
+      "custom": {
+        "endpoint": {
+          "sourceDir": "lambda/custom"
+        }
+      }
+    },
+    "manifestVersion": "1.0"
+  }
+}

@@ -160,8 +160,7 @@
       },
   };
 
-  //as of 2018, only works in english united states? This catch all is not working currently WHY AMAZON.
-  // Unhandled intents get pushed to some sort of default fallback prebuilt by amazon so no custom message appears?
+  //as of 2018, only works in english united states. For some reason needs a custom intent for it to work. The only reason why unhandled intent was made in the json intents.
   const FallbackHandler = {
       canHandle(handlerInput) {
           const request = handlerInput.requestEnvelope.request;
