@@ -1,5 +1,5 @@
 {
-  "name": "dabblelab-api-starter",
+  "name": "Counter Club",
   "version": "1.0.0",
   "description": "Counter Club number based memory game in Alexa",
   "main": "index.js",
