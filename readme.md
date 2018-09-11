@@ -26,18 +26,18 @@ Programming language used was Node.js. Uses asyc/await, which requires Node.js v
 1. Clone the repository.
 
 	```bash
-	$ git clone https://github.com/MatthewThePham/Counter-Club---Alexa-Game-Skill-.git
+	$ git clone https://gitlab.com/MatthewPh/CounterClub.git
 	```
 
 2. Navigating into the repository's root folder.
 
 	```bash
-	$ cd Counter-Club---Alexa-Game-Skill-
+	$ cd CounterClub
 	```
 
-3. Install npm dependencies by navigating into the `lambda/custom` directory and running the npm command: `npm install`
+3. Install npm dependencies by navigating into the `lambda/custom` directory and running the npm command: `npm install --save ask-sdk` for Alexa Skills Kit SDK 2.0 for Node.js.
 
 	```bash
 	$ cd lambda/custom
-	$ npm install
+	$ npm install --save ask-sdk
 	```
