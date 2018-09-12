@@ -118,7 +118,7 @@
                   .reprompt(reprompt)
                   .getResponse();
           } else {
-              return checkAnswer(handlerInput, answer); //user answered and is in game
+              return await checkAnswer(handlerInput, answer); //user answered and is in game
           }
 
       },
@@ -144,7 +144,7 @@
                   .speak(exitPrompt)
                   .getResponse();
           } else {
-              return checkAnswer(handlerInput, answer); //user answered and is in game
+              return await checkAnswer(handlerInput, answer); //user answered and is in game
           }
 
       },
