@@ -1,6 +1,8 @@
 # Counter Club! - Alexa Game Skill.
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![npm version](https://badge.fury.io/js/npm.svg)](https://badge.fury.io/js/npm)
+[![region](https://img.shields.io/badge/Region-US-green.svg)](https://img.shields.io/badge/Region-US-green.svg)
+
 
 This skill is intended to be used as reference of what can be done with persistent data in Alexa. The skill saves a user's high score into a database, which can be fetched for future game sessions.
 
