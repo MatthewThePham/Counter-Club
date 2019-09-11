@@ -4,6 +4,8 @@
 [![region](https://img.shields.io/badge/Region-US-green.svg)](https://img.shields.io/badge/Region-US-green.svg)
 
 
+![skillImage](https://gitlab.com/MatthewPh/CounterClub/raw/master/AlexaSkillStore.png)
+
 This skill is intended to be used as reference of what can be done with persistent data in Alexa. The skill saves a user's high score into a database, which can be fetched for future game sessions.
 
 Inside lambda/custom folder is the [index.js file](https://gitlab.com/MatthewPh/CounterClub/blob/master/lambda/custom/index.js), which is the main script code. It is heavily commented to help those implementing persistent data in their Alexa skills. 
